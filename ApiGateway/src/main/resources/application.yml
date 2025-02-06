@@ -1,0 +1,47 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+spring:
+  application:
+    name: Api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: discovery-server
+          uri: http://localhost:8761
+          predicates:
+            - Path=/eureka/web
+          filters:
+            - SetPath=/
+        - id: discovery-server-static
+          uri: http://localhost:8761
+          predicates:
+            - Path=/eureka/**
+        - id: UserService
+          uri: lb://UserService
+          predicates:
+            - Path=/api/userservice/**
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:5173"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway.route.RouteDefinitionLocator: INFO
+    org.springframework.cloud.gateway: trace
+signer:
+  key: lz9LYtc+Owipux05d20nXqhJStrb+uSVXEvv69gGqxtHBH+cT/rh9AbEg+2J50b2
