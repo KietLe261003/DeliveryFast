@@ -1,11 +1,15 @@
 package com.example.OrderService.Dto.Response;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
+@Getter
+@Setter
 public class OrderResponse {
     String id;
-    String userId;
+    InfoUser infoUser;
     String orderCode;
     String senderAddress;
     String reciverName;

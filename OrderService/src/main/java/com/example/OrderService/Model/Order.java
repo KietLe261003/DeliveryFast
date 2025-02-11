@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Document(value = "Order_Tb")
 @Data
@@ -25,6 +26,7 @@ public class Order {
     String note;
     Integer weight;
     BigDecimal deliveryFee;
+    List<String> imageUrls;
     String status;
     LocalDateTime createAt;
     LocalDateTime updateAt;
