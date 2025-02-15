@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.awt.*;
 
-@FeignClient(name = "user-service",url = "http://localhost:8081/api/userservice")
+@FeignClient(name = "user-service",url = "http://localhost:8083/api/userservice")
 public interface UserClient {
     @GetMapping(value = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
     ApiResponse findUserById(@PathVariable("id") String id);

@@ -12,7 +12,7 @@ public class WebClientConfiguration {
     @Bean
     WebClient webClient(){
         return WebClient.builder()
-                .baseUrl("http://localhost:8081/api/userservice")
+                .baseUrl("http://USERSERVICE:8083/api/userservice")
                 .build();
     }
 

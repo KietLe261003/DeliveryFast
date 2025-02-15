@@ -7,6 +7,7 @@ import com.example.OrderService.Dto.Request.Order.UpdateOrder;
 import com.example.OrderService.Dto.Response.ApiResponse;
 import com.example.OrderService.Dto.Response.InfoUser;
 import com.example.OrderService.Dto.Response.OrderResponse;
+import com.example.OrderService.Event.OrderPlacedEvent;
 import com.example.OrderService.Mapper.OrderMapper;
 import com.example.OrderService.Model.Order;
 import com.example.OrderService.Model.OrderShipper;
@@ -14,10 +15,13 @@ import com.example.OrderService.Repository.HttpClient.UserClient;
 import com.example.OrderService.Repository.OrderRepository;
 import com.example.OrderService.Repository.OrderShipperRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +30,7 @@ import java.util.*;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
@@ -36,6 +41,8 @@ public class OrderService {
     String uploadPath = "D:/ProjectCode/SpringBoot/DeliveryFast/Order/";
     @Autowired
     private OrderShipperRepository orderShipperRepository;
+
+    private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
 
     public List<Order> findAll() {
         return orderRepository.findAll();
@@ -71,8 +78,11 @@ public class OrderService {
         }
 
         order.setImageUrls(imageUrls);
-        if(checkUser.getCode()==200)
-            return orderRepository.save(order);
+        if(checkUser.getCode()==200) {
+            orderRepository.save(order);
+            kafkaTemplate.send("notificationTopic",new OrderPlacedEvent(order.getId()));
+            return order;
+        }
         else
             throw new AppException(ErrorCode.NotFoundUser);
     }

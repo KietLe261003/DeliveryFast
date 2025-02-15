@@ -29,21 +29,22 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     ObjectMapper objectMapper;
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        log.info("AuthenticationFilter...");
         List<String> authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION);
         if (CollectionUtils.isEmpty(authHeader))
             return unauthenticated(exchange.getResponse());
 
         String token = authHeader.get(0).replace("Bearer ", "");
         log.info("Token: {}", token);
+        return identityService.introspect(token)
+                .doOnNext(introspectResponse -> log.info("introspectResponse: {}", introspectResponse)) // Log sẽ chạy
+                .flatMap(introspectResponse -> {
+                    if (introspectResponse.getData())
+                        return chain.filter(exchange);
+                    else
+                        return unauthenticated(exchange.getResponse());
+                })
+                .onErrorResume(throwable -> failConnectUserService(exchange.getResponse()));
 
-
-        return identityService.introspect(token).flatMap(introspectResponse -> {
-            if (introspectResponse.getData())
-                return chain.filter(exchange);
-            else
-                return unauthenticated(exchange.getResponse());
-        }).onErrorResume(throwable -> unauthenticated(exchange.getResponse()));
     }
 
     @Override
@@ -55,6 +56,25 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         ApiResponse apiResponse = ApiResponse.builder()
                 .code(1401)
                 .message("Unauthenticated")
+                .build();
+
+        String body = null;
+        try {
+            body = objectMapper.writeValueAsString(apiResponse);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        response.setStatusCode(HttpStatus.UNAUTHORIZED);
+        response.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+
+        return response.writeWith(
+                Mono.just(response.bufferFactory().wrap(body.getBytes())));
+    }
+    Mono<Void> failConnectUserService(ServerHttpResponse response){
+        ApiResponse apiResponse = ApiResponse.builder()
+                .code(1401)
+                .message("Fail Connect User")
                 .build();
 
         String body = null;
