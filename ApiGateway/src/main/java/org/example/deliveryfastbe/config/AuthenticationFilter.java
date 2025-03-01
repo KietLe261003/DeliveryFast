@@ -34,7 +34,8 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     @NonFinal
     String[] publicEnpoint= {
             "/api/userservice/auth",
-            "/api/userservice/auth/checktoken"
+            "/api/userservice/auth/checktoken",
+            "/api/orderservice/orders/.*"
     };
 
 

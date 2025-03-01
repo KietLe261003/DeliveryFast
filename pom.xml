@@ -19,6 +19,7 @@
         <module>ApiGateway</module>
         <module>OrderService</module>
         <module>NotificationService</module>
+        <module>ShipperService</module>
     </modules>
 
     <properties>

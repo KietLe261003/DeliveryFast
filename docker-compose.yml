@@ -80,6 +80,22 @@ services:
       api-gateway:
         condition: service_started
 
+  ## Shipper-Service Docker Compose Config
+  shipperservice:
+    container_name: shipperservice
+    image: kietle26102003/shipperservice:latest
+    pull_policy: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+      mongo:
+        condition: service_started
+      api-gateway:
+        condition: service_started
+
   ## User-Service Docker Compose Config
   userservice:
     container_name: userservice
