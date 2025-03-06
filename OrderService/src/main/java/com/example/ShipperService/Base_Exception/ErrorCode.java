@@ -9,6 +9,7 @@ public enum ErrorCode {
     NotFoundShipper(1000,"Not found Shipper", org.springframework.http.HttpStatus.NOT_FOUND),
     NotFoundOrderShipper(1000,"Not found order Shipper", org.springframework.http.HttpStatus.NOT_FOUND),
     NotFoundTracking(1000,"Not found Tracking", org.springframework.http.HttpStatus.NOT_FOUND),
+    NotFoundWarehouse(1000,"Not found Warehouse", org.springframework.http.HttpStatus.NOT_FOUND),
     ;
     Integer code;
     String message;

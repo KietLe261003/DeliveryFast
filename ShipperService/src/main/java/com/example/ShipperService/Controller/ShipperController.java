@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/orderservice/shipper")
+@RequestMapping("/api/shipperservice/shipper")
 public class ShipperController {
     @Autowired
     private ShipperService shipperService;
@@ -28,6 +28,15 @@ public class ShipperController {
                 .code(200)
                 .message("Success")
                 .data(shipperService.findById(id))
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
+    @GetMapping("/findByUserId/{userId}")
+    public ResponseEntity<ApiResponse> getShipperByUserId(@PathVariable String userId) {
+        ApiResponse apiResponse = ApiResponse.builder()
+                .code(200)
+                .message("Success")
+                .data(shipperService.findByUserId(userId))
                 .build();
         return ResponseEntity.ok(apiResponse);
     }

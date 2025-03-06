@@ -1,5 +1,6 @@
 package com.example.ShipperService.Dto.Request.Order;
 
+import com.example.ShipperService.Model.GeoPoint;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,4 +21,6 @@ public class CreateOrder {
     BigDecimal deliveryFee;
     private List<MultipartFile> images;
     String status;
+    GeoPoint locationSender;
+    GeoPoint locationReciver;
 }

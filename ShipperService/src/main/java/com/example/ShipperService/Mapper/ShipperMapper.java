@@ -1,6 +1,7 @@
 package com.example.ShipperService.Mapper;
 
 import com.example.ShipperService.Dto.Request.Shipper.CreateShipper;
+import com.example.ShipperService.Dto.Request.UserRequest;
 import com.example.ShipperService.Model.Shipper;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
@@ -9,4 +10,5 @@ import org.mapstruct.MappingTarget;
 public interface ShipperMapper {
     Shipper toShipper(CreateShipper createShipper);
     void updateShipper(@MappingTarget Shipper shipper, CreateShipper createShipper);
+    UserRequest toUserRequest(CreateShipper createShipper);
 }

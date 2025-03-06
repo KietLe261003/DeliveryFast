@@ -30,4 +30,6 @@ public class Order {
     String status;
     LocalDateTime createAt;
     LocalDateTime updateAt;
+    GeoPoint locationSender;
+    GeoPoint locationReciver;
 }

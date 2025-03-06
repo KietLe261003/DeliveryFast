@@ -27,10 +27,17 @@ spring:
           uri: lb://OrderService
           predicates:
               - Path=/api/orderservice/**
+        - id: ShipperService
+          uri: lb://ShipperService
+          predicates:
+            - Path=/api/shipperservice/**
       globalcors:
         corsConfigurations:
           '[/**]':
-            allowedOrigins: "http://localhost:5173"
+            allowedOrigins:
+              - "http://localhost:5173"
+              - "http://localhost:8081"
+              - "exp://192.168.1.10:8081"
             allowedMethods:
               - GET
               - POST

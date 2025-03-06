@@ -1,5 +1,6 @@
 package com.example.ShipperService.Dto.Request.Tracking;
 
+import com.example.ShipperService.Model.GeoPoint;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,5 +8,5 @@ import lombok.Setter;
 @Setter
 public class CreateTracking {
     String orderId;
-    String location;
+    GeoPoint location;
 }

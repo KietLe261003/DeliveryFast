@@ -9,15 +9,24 @@ import com.example.ShipperService.Dto.Response.InfoUser;
 import com.example.ShipperService.Dto.Response.OrderResponse;
 import com.example.ShipperService.Event.OrderPlacedEvent;
 import com.example.ShipperService.Mapper.OrderMapper;
+import com.example.ShipperService.Model.GeoPoint;
 import com.example.ShipperService.Model.Order;
+import com.example.ShipperService.Model.Tracking;
+import com.example.ShipperService.Model.WareHouse;
 import com.example.ShipperService.Repository.HttpClient.UserClient;
 import com.example.ShipperService.Repository.OrderRepository;
+import com.example.ShipperService.Repository.TrackingRepository;
+import com.example.ShipperService.Repository.WareHouseRepository;
+import com.example.ShipperService.Until.FindNearWareHouse;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -36,12 +45,13 @@ public class OrderService {
     OrderMapper orderMapper;
     @Autowired
     UserClient userClient;
+    @Autowired
+    TrackingRepository trackingRepository;
+    @Autowired
+    FindNearWareHouse findNearWareHouse;
     //String uploadPath = "D:/ProjectCode/SpringBoot/DeliveryFast/orders/";
 
     String uploadPath = "/app/data/orders/";
-
-
-
 
     private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
 
@@ -70,6 +80,27 @@ public class OrderService {
         order.setCreateAt(LocalDateTime.now());
         order.setUpdateAt(LocalDateTime.now());
 
+        // Tìm kho ở gần chỗ lấy hàng
+        WareHouse nearestSenderWarehouse = findNearWareHouse.findNearestWarehouse(
+                order.getLocationSender().getLatitude(),
+                order.getLocationSender().getLongitude()
+        );
+        // Tìm kho ở gần nơi nhận hàng
+        WareHouse nearestReceiverWarehouse = findNearWareHouse.findNearestWarehouse(
+                order.getLocationReciver().getLatitude(),
+                order.getLocationReciver().getLongitude()
+        );
+        // Tìm kho trung chuyển gần kho gửi hàng
+        WareHouse nearSenderWarehouseCentral = findNearWareHouse.findNearestWarehouseCentral(
+                nearestSenderWarehouse.getLocation().getLatitude(),
+                nearestSenderWarehouse.getLocation().getLongitude()
+        );
+        // Tìm kho trung chuyển gần kho nhận hàng
+        WareHouse nearReceiverWarehouseCentral = findNearWareHouse.findNearestWarehouseCentral(
+                nearestReceiverWarehouse.getLocation().getLatitude(),
+                nearestReceiverWarehouse.getLocation().getLongitude()
+        );
+
         ApiResponse checkUser = userClient.findUserById(createOrder.getUserId());
         List<String> imageUrls = new ArrayList<>();
         for (MultipartFile image : createOrder.getImages()) {
@@ -78,15 +109,48 @@ public class OrderService {
             image.transferTo(imageFile); // Lưu file
             imageUrls.add("/orders/" + imageName); // Lưu URL file
         }
-
         order.setImageUrls(imageUrls);
-        if(checkUser.getCode()==200) {
+
+        if (checkUser.getCode() == 200) {
             orderRepository.save(order);
-            kafkaTemplate.send("notificationTopic",new OrderPlacedEvent(order.getId()));
+            List<Tracking> listTracking = new ArrayList<>();
+
+            // 1️⃣ Shipper lấy hàng từ khách → Kho cơ sở gần nhất
+            listTracking.add(new Tracking(null,order.getId(), "Chờ lấy hàng",
+                    new GeoPoint(order.getLocationSender().getLatitude(), order.getLocationSender().getLongitude()), LocalDateTime.now()));
+
+            listTracking.add(new Tracking(null,order.getId(), "Đã đến kho cơ sở "+nearestSenderWarehouse.getName(),
+                    new GeoPoint(nearestSenderWarehouse.getLocation().getLatitude(), nearestSenderWarehouse.getLocation().getLongitude()), LocalDateTime.now()));
+
+            // 2️⃣ Nếu kho cơ sở khác kho trung chuyển, đưa hàng đến kho trung chuyển
+            if (!nearestSenderWarehouse.equals(nearSenderWarehouseCentral)) {
+                listTracking.add(new Tracking(null,order.getId(), "Đang đến kho trung chuyển "+nearSenderWarehouseCentral.getName(),
+                        new GeoPoint(nearSenderWarehouseCentral.getLocation().getLatitude(), nearSenderWarehouseCentral.getLocation().getLongitude()), LocalDateTime.now()));
+            }
+
+            // 3️⃣ Vận chuyển từ kho trung chuyển đến kho cơ sở gần điểm nhận
+            if (!nearSenderWarehouseCentral.equals(nearReceiverWarehouseCentral)) {
+                listTracking.add(new Tracking(null,order.getId(), "Đang vận chuyển đến kho trung chuyển gần điểm nhận "+nearReceiverWarehouseCentral.getName(),
+                        new GeoPoint(nearReceiverWarehouseCentral.getLocation().getLatitude(), nearReceiverWarehouseCentral.getLocation().getLongitude()), LocalDateTime.now()));
+            }
+
+            listTracking.add(new Tracking(null,order.getId(), "Đã đến kho cơ sở gần người nhận "+nearestReceiverWarehouse.getName(),
+                    new GeoPoint(nearestReceiverWarehouse.getLocation().getLatitude(), nearestReceiverWarehouse.getLocation().getLongitude()), LocalDateTime.now()));
+
+            // 4️⃣ Shipper giao hàng từ kho cơ sở đến người nhận
+            listTracking.add(new Tracking(null,order.getId(), "Đang giao hàng đến người nhận",
+                    new GeoPoint(order.getLocationReciver().getLatitude(), order.getLocationReciver().getLongitude()), LocalDateTime.now()));
+
+            // Lưu tất cả Tracking vào database
+            trackingRepository.saveAll(listTracking);
+
+            // Gửi sự kiện Kafka thông báo đơn hàng mới
+            kafkaTemplate.send("notificationTopic", new OrderPlacedEvent(order.getId()));
+
             return order;
-        }
-        else
+        } else {
             throw new AppException(ErrorCode.NotFoundUser);
+        }
     }
     public Order update(String id, UpdateOrder updateOrder) {
         Order order = orderRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.NotFoundOrder));

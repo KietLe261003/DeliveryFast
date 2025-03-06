@@ -1,5 +1,6 @@
 package com.example.ShipperService.Dto.Request.Order;
 
+import com.example.ShipperService.Model.GeoPoint;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,4 +16,6 @@ public class UpdateOrder {
     Integer weight;
     BigDecimal deliveryFee;
     String status;
+    GeoPoint locationSender;
+    GeoPoint locationReciver;
 }
