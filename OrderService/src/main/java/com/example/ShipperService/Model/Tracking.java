@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.NonFinal;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -18,7 +19,9 @@ public class Tracking {
     @Id
     String id;
     String orderId;
+    String desciption;
     String status;
     GeoPoint location;
     LocalDateTime timeStamp; //thời gian đơn hàng được cập nhật lần cuối
+    String ShipperId;
 }

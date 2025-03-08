@@ -49,4 +49,22 @@ public class TrackingCotroller {
                 .build();
         return ResponseEntity.ok(apiResponse);
     }
+    @GetMapping("/gettrackingbystatus/{status}")
+    public ResponseEntity<ApiResponse> getTrackingByStatus(@PathVariable String status) {
+        ApiResponse apiResponse = ApiResponse.builder()
+                .code(200)
+                .message("Success")
+                .data(trackingService.getTrackingByStatus(status))
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
+    @GetMapping("/gettrackingbyshipperid/{shipperId}")
+    public ResponseEntity<ApiResponse> getTrackingByShipperId(@PathVariable String shipperId) {
+        ApiResponse apiResponse = ApiResponse.builder()
+                .code(200)
+                .message("Success")
+                .data(trackingService.getTrackingByShipperId(shipperId))
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
 }

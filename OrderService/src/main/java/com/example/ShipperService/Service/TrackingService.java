@@ -3,14 +3,19 @@ package com.example.ShipperService.Service;
 import com.example.ShipperService.Base_Exception.AppException;
 import com.example.ShipperService.Base_Exception.ErrorCode;
 import com.example.ShipperService.Dto.Request.Tracking.CreateTracking;
+import com.example.ShipperService.Dto.Response.Shipper.ApiResponseShipper;
+import com.example.ShipperService.Dto.Response.Shipper.Shipper;
 import com.example.ShipperService.Mapper.TrackingMapper;
 import com.example.ShipperService.Model.Tracking;
+import com.example.ShipperService.Repository.HttpClient.ShipperClient;
 import com.example.ShipperService.Repository.OrderRepository;
 import com.example.ShipperService.Repository.TrackingRepository;
+import com.example.ShipperService.Until.FindTrackingInsideShipperArea;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,6 +26,12 @@ public class TrackingService {
     private OrderRepository orderRepository;
     @Autowired
     private TrackingMapper trackingMapper;
+
+    @Autowired
+    ShipperClient shipperClient;
+
+    @Autowired
+    FindTrackingInsideShipperArea findTrackingInsideShipperArea;
 
     public List<Tracking> getAllTracking(){
         return trackingRepository.findAll();
@@ -40,5 +51,17 @@ public class TrackingService {
     public List<Tracking> getTrackingByOrderId(String orderId){
         return trackingRepository.findByOrderId(orderId);
     }
+    public List<Tracking> getTrackingByStatus(String status){
+        return trackingRepository.getAllTrackingByStatus(status);
+    }
+
+    public List<Tracking> getTrackingByShipperId (String shipperId){
+        ApiResponseShipper shipperResponse = shipperClient.findShipperByUserId(shipperId);
+        List<Tracking> trackingList = trackingRepository.getAllTrackingByStatus("pending");
+        List<Tracking> filteredTrackingList = findTrackingInsideShipperArea.findTrackingsInShipperArea(shipperResponse.getData().getShipperArea(), trackingList);
+        return filteredTrackingList;
+    }
+
+
 
 }
