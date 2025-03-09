@@ -7,7 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "order-service",url = "http://localhost:8082/api/orderservice")
+@FeignClient(name = "order-service",url = "http://ORDERSERVICE:8082/api/orderservice")
 public interface OrderClient {
     @GetMapping(value = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
     ApiResponseOrder findOrderById(@PathVariable("id") String id);

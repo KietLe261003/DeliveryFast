@@ -11,6 +11,8 @@ import com.example.ShipperService.Repository.HttpClient.ShipperClient;
 import com.example.ShipperService.Repository.OrderRepository;
 import com.example.ShipperService.Repository.TrackingRepository;
 import com.example.ShipperService.Until.FindTrackingInsideShipperArea;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ import java.util.List;
 
 @Service
 public class TrackingService {
+    private static final Logger log = LoggerFactory.getLogger(TrackingService.class);
     @Autowired
     private TrackingRepository trackingRepository;
     @Autowired
@@ -57,6 +60,7 @@ public class TrackingService {
 
     public List<Tracking> getTrackingByShipperId (String shipperId){
         ApiResponseShipper shipperResponse = shipperClient.findShipperByUserId(shipperId);
+        log.info(shipperResponse.toString());
         List<Tracking> trackingList = trackingRepository.getAllTrackingByStatus("pending");
         List<Tracking> filteredTrackingList = findTrackingInsideShipperArea.findTrackingsInShipperArea(shipperResponse.getData().getShipperArea(), trackingList);
         return filteredTrackingList;

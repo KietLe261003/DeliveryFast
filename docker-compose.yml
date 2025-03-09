@@ -84,6 +84,8 @@ services:
   shipperservice:
     container_name: shipperservice
     image: kietle26102003/shipperservice:latest
+    ports:
+      - "8084:8084"
     pull_policy: always
     environment:
       - SPRING_PROFILES_ACTIVE=docker

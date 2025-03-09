@@ -7,9 +7,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/api/orderservice/Order/**")
-                .addResourceLocations("file:D:/ProjectCode/SpringBoot/DeliveryFast/Order/");
-    }
+//    @Override
+//    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+//        registry.addResourceHandler("/api/orderservice/Order/**")
+//                .addResourceLocations("file:D:/ProjectCode/SpringBoot/DeliveryFast/Order/");
+//    }
 }
