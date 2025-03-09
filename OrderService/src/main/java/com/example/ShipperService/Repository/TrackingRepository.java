@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface TrackingRepository extends MongoRepository<Tracking, String> {
     List<Tracking> findByOrderId(String orderId);
+    List<Tracking> getAllTrackingByStatus(String status);
 }

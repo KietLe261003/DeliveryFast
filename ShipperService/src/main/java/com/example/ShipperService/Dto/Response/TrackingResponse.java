@@ -1,5 +1,6 @@
-package com.example.ShipperService.Model;
+package com.example.ShipperService.Dto.Response;
 
+import com.example.ShipperService.Model.GeoPoint;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,18 +11,16 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Document(value = "Tracking_Tb")
+
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class Tracking {
+public class TrackingResponse {
     @Id
     String id;
     String orderId;
-    String desciption;
     String status;
     GeoPoint location;
     LocalDateTime timeStamp; //thời gian đơn hàng được cập nhật lần cuối
+    @NonFinal
     String ShipperId;
 }

@@ -117,29 +117,29 @@ public class OrderService {
 
             // 1️⃣ Shipper lấy hàng từ khách → Kho cơ sở gần nhất
             listTracking.add(new Tracking(null,order.getId(), "Chờ lấy hàng","pending",
-                    new GeoPoint(order.getLocationSender().getLatitude(), order.getLocationSender().getLongitude()), LocalDateTime.now()));
+                    new GeoPoint(order.getLocationSender().getLatitude(), order.getLocationSender().getLongitude()), LocalDateTime.now(),""));
 
             listTracking.add(new Tracking(null,order.getId(), "Đã đến kho cơ sở "+nearestSenderWarehouse.getName(),"pending",
-                    new GeoPoint(nearestSenderWarehouse.getLocation().getLatitude(), nearestSenderWarehouse.getLocation().getLongitude()), LocalDateTime.now()));
+                    new GeoPoint(nearestSenderWarehouse.getLocation().getLatitude(), nearestSenderWarehouse.getLocation().getLongitude()), LocalDateTime.now(),""));
 
             // 2️⃣ Nếu kho cơ sở khác kho trung chuyển, đưa hàng đến kho trung chuyển
             if (!nearestSenderWarehouse.equals(nearSenderWarehouseCentral)) {
                 listTracking.add(new Tracking(null,order.getId(), "Đang đến kho trung chuyển "+nearSenderWarehouseCentral.getName(),"pending",
-                        new GeoPoint(nearSenderWarehouseCentral.getLocation().getLatitude(), nearSenderWarehouseCentral.getLocation().getLongitude()), LocalDateTime.now()));
+                        new GeoPoint(nearSenderWarehouseCentral.getLocation().getLatitude(), nearSenderWarehouseCentral.getLocation().getLongitude()), LocalDateTime.now(),""));
             }
 
             // 3️⃣ Vận chuyển từ kho trung chuyển đến kho cơ sở gần điểm nhận
             if (!nearSenderWarehouseCentral.equals(nearReceiverWarehouseCentral)) {
                 listTracking.add(new Tracking(null,order.getId(), "Đang vận chuyển đến kho trung chuyển gần điểm nhận "+nearReceiverWarehouseCentral.getName(),"pending",
-                        new GeoPoint(nearReceiverWarehouseCentral.getLocation().getLatitude(), nearReceiverWarehouseCentral.getLocation().getLongitude()), LocalDateTime.now()));
+                        new GeoPoint(nearReceiverWarehouseCentral.getLocation().getLatitude(), nearReceiverWarehouseCentral.getLocation().getLongitude()), LocalDateTime.now(),""));
             }
 
             listTracking.add(new Tracking(null,order.getId(), "Đã đến kho cơ sở gần người nhận "+nearestReceiverWarehouse.getName(),"pending",
-                    new GeoPoint(nearestReceiverWarehouse.getLocation().getLatitude(), nearestReceiverWarehouse.getLocation().getLongitude()), LocalDateTime.now()));
+                    new GeoPoint(nearestReceiverWarehouse.getLocation().getLatitude(), nearestReceiverWarehouse.getLocation().getLongitude()), LocalDateTime.now(),""));
 
             // 4️⃣ Shipper giao hàng từ kho cơ sở đến người nhận
             listTracking.add(new Tracking(null,order.getId(), "Đang giao hàng đến người nhận","pending",
-                    new GeoPoint(order.getLocationReciver().getLatitude(), order.getLocationReciver().getLongitude()), LocalDateTime.now()));
+                    new GeoPoint(order.getLocationReciver().getLatitude(), order.getLocationReciver().getLongitude()), LocalDateTime.now(),""));
 
             // Lưu tất cả Tracking vào database
             trackingRepository.saveAll(listTracking);
