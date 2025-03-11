@@ -19,9 +19,11 @@ public class Tracking {
     @Id
     String id;
     String orderId;
-    String desciption;
+    String description;
     String status;
     GeoPoint location;
+    GeoPoint nextLocation;
     LocalDateTime timeStamp; //thời gian đơn hàng được cập nhật lần cuối
-    String ShipperId;
+    LocalDateTime updateTimeStamp;
+    String shipperId;
 }

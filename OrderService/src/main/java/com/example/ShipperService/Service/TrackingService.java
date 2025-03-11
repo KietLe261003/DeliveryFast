@@ -3,6 +3,7 @@ package com.example.ShipperService.Service;
 import com.example.ShipperService.Base_Exception.AppException;
 import com.example.ShipperService.Base_Exception.ErrorCode;
 import com.example.ShipperService.Dto.Request.Tracking.CreateTracking;
+import com.example.ShipperService.Dto.Request.Tracking.UpdateTracking;
 import com.example.ShipperService.Dto.Response.Shipper.ApiResponseShipper;
 import com.example.ShipperService.Dto.Response.Shipper.Shipper;
 import com.example.ShipperService.Mapper.TrackingMapper;
@@ -61,9 +62,34 @@ public class TrackingService {
     public List<Tracking> getTrackingByShipperId (String shipperId){
         ApiResponseShipper shipperResponse = shipperClient.findShipperByUserId(shipperId);
         log.info(shipperResponse.toString());
-        List<Tracking> trackingList = trackingRepository.getAllTrackingByStatus("pending");
-        List<Tracking> filteredTrackingList = findTrackingInsideShipperArea.findTrackingsInShipperArea(shipperResponse.getData().getShipperArea(), trackingList);
+        List<Tracking> trackingList = trackingRepository.findByStatusInTwoValues("ready","pending","shipping");
+
+        List<Tracking> filteredTrackingList = findTrackingInsideShipperArea.findTrackingsInShipperArea(shipperResponse.getData().getShipperArea(), trackingList,shipperId);
         return filteredTrackingList;
+    }
+    public List<Tracking> getHistoryShipper(String shipperId){
+        List<Tracking> trackingList = trackingRepository.findByShipperId(shipperId);
+        trackingList.stream()
+                .filter((item)->item.getStatus().equals("complete"))
+                .sorted((item1, item2) -> item1.getUpdateTimeStamp().compareTo(item2.getUpdateTimeStamp()));
+        return trackingList;
+    }
+    public Tracking updateTracking(String trackingId, UpdateTracking updateTracking){
+        Tracking tracking = getTrackingById(trackingId);
+        tracking.setStatus(updateTracking.getStatus());
+        tracking.setShipperId(updateTracking.getShipperId());
+        tracking.setUpdateTimeStamp(LocalDateTime.now());
+        trackingRepository.save(tracking);
+        return tracking;
+    }
+    public String deleteTrackingByOrderId(String orderId){
+        List<Tracking> trackingList = getTrackingByOrderId(orderId);
+        trackingRepository.deleteAll(trackingList);
+        return "success";
+    }
+
+    public Boolean checkShipperIdAndOrderId(String shipperId, String orderId){
+        return trackingRepository.findByShipperIdAndOrderId(shipperId,orderId);
     }
 
 

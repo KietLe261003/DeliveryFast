@@ -5,6 +5,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+
 @Getter
 @Setter
 public class OrderResponse {
@@ -18,6 +20,7 @@ public class OrderResponse {
     String note;
     Integer weight;
     BigDecimal deliveryFee;
+    List<String> imageUrls;
     String status;
     LocalDateTime createAt;
     LocalDateTime updateAt;

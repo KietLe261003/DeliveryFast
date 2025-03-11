@@ -116,36 +116,61 @@ public class OrderService {
             List<Tracking> listTracking = new ArrayList<>();
 
             // 1️⃣ Shipper lấy hàng từ khách → Kho cơ sở gần nhất
-            listTracking.add(new Tracking(null,order.getId(), "Chờ lấy hàng","pending",
-                    new GeoPoint(order.getLocationSender().getLatitude(), order.getLocationSender().getLongitude()), LocalDateTime.now(),""));
+            listTracking.add(new Tracking(null,order.getId(), "Chờ lấy hàng","ready",
+                    new GeoPoint(order.getLocationSender().getLatitude(), order.getLocationSender().getLongitude()),
+                    new GeoPoint(nearestSenderWarehouse.getLocation().getLatitude(), nearestSenderWarehouse.getLocation().getLongitude())
+                    ,LocalDateTime.now(),LocalDateTime.now(),""));
 
-            listTracking.add(new Tracking(null,order.getId(), "Đã đến kho cơ sở "+nearestSenderWarehouse.getName(),"pending",
-                    new GeoPoint(nearestSenderWarehouse.getLocation().getLatitude(), nearestSenderWarehouse.getLocation().getLongitude()), LocalDateTime.now(),""));
+
 
             // 2️⃣ Nếu kho cơ sở khác kho trung chuyển, đưa hàng đến kho trung chuyển
-            if (!nearestSenderWarehouse.equals(nearSenderWarehouseCentral)) {
-                listTracking.add(new Tracking(null,order.getId(), "Đang đến kho trung chuyển "+nearSenderWarehouseCentral.getName(),"pending",
-                        new GeoPoint(nearSenderWarehouseCentral.getLocation().getLatitude(), nearSenderWarehouseCentral.getLocation().getLongitude()), LocalDateTime.now(),""));
+            if (nearestSenderWarehouse.getLocation().getLatitude()!=nearSenderWarehouseCentral.getLocation().getLatitude() && nearestSenderWarehouse.getLocation().getLongitude()!=nearSenderWarehouseCentral.getLocation().getLongitude()) {
+                listTracking.add(new Tracking(null,order.getId(), "Đã đến kho cơ sở "+nearestSenderWarehouse.getName(),"pending",
+                        new GeoPoint(nearestSenderWarehouse.getLocation().getLatitude(), nearestSenderWarehouse.getLocation().getLongitude()),
+                        new GeoPoint(nearSenderWarehouseCentral.getLocation().getLatitude(), nearSenderWarehouseCentral.getLocation().getLongitude())
+                        , LocalDateTime.now(),LocalDateTime.now(),""));
+                listTracking.add(new Tracking(null,order.getId(), "Đã đến kho trung chuyển "+nearSenderWarehouseCentral.getName(),"pending",
+                        new GeoPoint(nearSenderWarehouseCentral.getLocation().getLatitude(), nearSenderWarehouseCentral.getLocation().getLongitude()),
+                        new GeoPoint(nearReceiverWarehouseCentral.getLocation().getLatitude(), nearReceiverWarehouseCentral.getLocation().getLongitude())
+                        ,LocalDateTime.now(),LocalDateTime.now(),""));
+            }
+            else
+            {
+                listTracking.add(new Tracking(null,order.getId(), "Đã đến kho trung chuyển "+nearSenderWarehouseCentral.getName(),"pending",
+                        new GeoPoint(nearSenderWarehouseCentral.getLocation().getLatitude(), nearSenderWarehouseCentral.getLocation().getLongitude()),
+                        new GeoPoint(nearReceiverWarehouseCentral.getLocation().getLatitude(), nearReceiverWarehouseCentral.getLocation().getLongitude())
+                        ,LocalDateTime.now(),LocalDateTime.now(),""));
             }
 
             // 3️⃣ Vận chuyển từ kho trung chuyển đến kho cơ sở gần điểm nhận
-            if (!nearSenderWarehouseCentral.equals(nearReceiverWarehouseCentral)) {
-                listTracking.add(new Tracking(null,order.getId(), "Đang vận chuyển đến kho trung chuyển gần điểm nhận "+nearReceiverWarehouseCentral.getName(),"pending",
-                        new GeoPoint(nearReceiverWarehouseCentral.getLocation().getLatitude(), nearReceiverWarehouseCentral.getLocation().getLongitude()), LocalDateTime.now(),""));
+            if (nearestReceiverWarehouse.getLocation().getLatitude()!=nearReceiverWarehouseCentral.getLocation().getLatitude() && nearestReceiverWarehouse.getLocation().getLongitude()!=nearReceiverWarehouseCentral.getLocation().getLongitude()) {
+                listTracking.add(new Tracking(null,order.getId(), "Đã vận chuyển đến kho trung chuyển gần điểm nhận "+nearReceiverWarehouseCentral.getName(),"pending",
+                        new GeoPoint(nearReceiverWarehouseCentral.getLocation().getLatitude(), nearReceiverWarehouseCentral.getLocation().getLongitude()),
+                        new GeoPoint(nearestReceiverWarehouse.getLocation().getLatitude(), nearestReceiverWarehouse.getLocation().getLongitude())
+                        ,LocalDateTime.now(),LocalDateTime.now(),""));
+                listTracking.add(new Tracking(null,order.getId(), "Đã đến kho cơ sở gần người nhận "+nearestReceiverWarehouse.getName(),"pending",
+                        new GeoPoint(nearestReceiverWarehouse.getLocation().getLatitude(), nearestReceiverWarehouse.getLocation().getLongitude()),
+                        new GeoPoint(order.getLocationReciver().getLatitude(), order.getLocationReciver().getLongitude())
+                        ,LocalDateTime.now(),LocalDateTime.now(),""));
             }
-
-            listTracking.add(new Tracking(null,order.getId(), "Đã đến kho cơ sở gần người nhận "+nearestReceiverWarehouse.getName(),"pending",
-                    new GeoPoint(nearestReceiverWarehouse.getLocation().getLatitude(), nearestReceiverWarehouse.getLocation().getLongitude()), LocalDateTime.now(),""));
-
+            else
+            {
+                listTracking.add(new Tracking(null,order.getId(), "Đã vận chuyển đến kho trung chuyển gần điểm nhận "+nearestReceiverWarehouse.getName(),"pending",
+                        new GeoPoint(nearestReceiverWarehouse.getLocation().getLatitude(), nearestReceiverWarehouse.getLocation().getLongitude()),
+                        new GeoPoint(order.getLocationReciver().getLatitude(), order.getLocationReciver().getLongitude())
+                        ,LocalDateTime.now(),LocalDateTime.now(),""));
+            }
             // 4️⃣ Shipper giao hàng từ kho cơ sở đến người nhận
-            listTracking.add(new Tracking(null,order.getId(), "Đang giao hàng đến người nhận","pending",
-                    new GeoPoint(order.getLocationReciver().getLatitude(), order.getLocationReciver().getLongitude()), LocalDateTime.now(),""));
+            listTracking.add(new Tracking(null,order.getId(), "Người nhận: "+order.getReciverName()+" : "+order.getReciverPhone(),"target",
+                    new GeoPoint(order.getLocationReciver().getLatitude(), order.getLocationReciver().getLongitude()),
+                    new GeoPoint(order.getLocationReciver().getLatitude(), order.getLocationReciver().getLongitude()),
+                    LocalDateTime.now(),LocalDateTime.now(),""));
 
             // Lưu tất cả Tracking vào database
             trackingRepository.saveAll(listTracking);
 
             // Gửi sự kiện Kafka thông báo đơn hàng mới
-            kafkaTemplate.send("notificationTopic", new OrderPlacedEvent(order.getId()));
+            //kafkaTemplate.send("notificationTopic", new OrderPlacedEvent(order.getId()));
 
             return order;
         } else {
@@ -160,6 +185,8 @@ public class OrderService {
     }
     public Order delete(String id) {
         Order order = orderRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.NotFoundOrder));
+        List<Tracking> listTracking = trackingRepository.findByOrderId(order.getId());
+        trackingRepository.deleteAll(listTracking);
         orderRepository.delete(order);
         return order;
     }
